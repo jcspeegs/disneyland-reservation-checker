@@ -12,8 +12,10 @@ class DisneylandReservationChecker():
     ''' Check reservation availability at Disneyland and California Adventure
 
         Arguments:
-            start   Starting date for reservation query (default: today)
-            end     End date for reservation query (default: start)
+           -s, --start  Starting date for reservation query as yyyy-mm-dd
+                        (default: today)
+           -e, --end    End date for reservation query as yyyy-mm-dd
+                        (default: start)
     '''
 
     url = 'https://disneyland.disney.go.com/availability-calendar/api/calendar'
