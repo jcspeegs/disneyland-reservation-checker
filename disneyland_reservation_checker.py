@@ -134,22 +134,17 @@ def parse_arguments(args):
     )
     parser.add_argument(
         '-s', '--start', dest='start', required=False,
-        help='Check Disneyland for availability starting on this date')
+        help='Starting date for reservation query as yyyy-mm-dd ' \
+            + '(default: today)')
     parser.add_argument(
         '-e', '--end', dest='end', required=False,
-        help='Check Disneyland for availability until this date')
+        help='End date for reservation query as yyyy-mm-dd (default: start)')
 
     return parser.parse_args(args)
 
 
 def main():
     ''' Check reservation availability at Disneyland and California Adventure
-
-        Arguments:
-           -s, --start  Starting date for reservation query as yyyy-mm-dd
-                        (default: today)
-           -e, --end    End date for reservation query as yyyy-mm-dd
-                        (default: start)
     '''
 
     logger = get_logger()
