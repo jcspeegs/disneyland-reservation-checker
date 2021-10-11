@@ -10,12 +10,6 @@ from time import sleep
 
 class DisneylandReservationChecker():
     ''' Check reservation availability at Disneyland and California Adventure
-
-        Arguments:
-           -s, --start  Starting date for reservation query as yyyy-mm-dd
-                        (default: today)
-           -e, --end    End date for reservation query as yyyy-mm-dd
-                        (default: start)
     '''
 
     url = 'https://disneyland.disney.go.com/availability-calendar/api/calendar'
@@ -50,13 +44,15 @@ class DisneylandReservationChecker():
             self._end = self.start
 
     def __str__(self):
+        ''' String representation of Disneyland availability calendar object'''
+
         message = [f'{self.time}', ]
         if self.available:
             for day in self.available:
                 park = ' and '.join(day['parks'])
                 message += [f'{day["date"]} is available for: {park}', ]
         else:
-            message += [f'No availability :(', ]
+            message += ['No availability :(', ]
 
         width = max(map(len, message))
         message = '\n'.join(message)
@@ -129,27 +125,35 @@ def get_logger():
     return logger
 
 
-def parse_arguments():
+def parse_arguments(args):
+    ''' Parse command line arguements'''
+
     parser = argparse.ArgumentParser(
-        description=__doc__,
+        description=main.__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
         '-s', '--start', dest='start', required=False,
-        help='Check Disneyland for availability until this date')
+        help='Check Disneyland for availability starting on this date')
     parser.add_argument(
         '-e', '--end', dest='end', required=False,
-        help='Check Disneyland for availability starting on this date')
-    args = parser.parse_args()
+        help='Check Disneyland for availability until this date')
 
-    return args
+    return parser.parse_args(args)
 
 
 def main():
-    ''' Check for reservations'''
+    ''' Check reservation availability at Disneyland and California Adventure
+
+        Arguments:
+           -s, --start  Starting date for reservation query as yyyy-mm-dd
+                        (default: today)
+           -e, --end    End date for reservation query as yyyy-mm-dd
+                        (default: start)
+    '''
 
     logger = get_logger()
-    args = parse_arguments()
+    args = parse_arguments(sys.argv[1:])
 
     calendar = DisneylandReservationChecker(logger, args.start, args.end)
     while True:
