@@ -6,6 +6,7 @@ import sys
 import requests
 from datetime import datetime, date
 from time import sleep
+import re
 
 
 class DisneylandReservationChecker():
@@ -14,12 +15,20 @@ class DisneylandReservationChecker():
 
     url = 'https://disneyland.disney.go.com/availability-calendar/api/calendar'
 
-    def __init__(self, logger, start: str = None, end: str = None):
+    headers = {'User-Agent':
+               'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+               + 'AppleWebKit/537.36 (KHTML, like Gecko) '
+               + 'Chrome/91.0.4472.77 Safari/537.36', }
+
+    def __init__(self, logger = None, start: str = None, end: str = None):
         self.logger = logger
         self.start = start
         self.end = end
         self.available = None
         self.time = None
+        self.payload = {'segment': 'ticket',
+                        'startDate': self.start,
+                        'endDate': self.end, }
 
     @property
     def start(self):
@@ -61,31 +70,24 @@ class DisneylandReservationChecker():
 
     def refresh(self):
         ''' Check the calendar'''
-        payload = {'segment': 'ticket',
-                   'startDate': self.start,
-                   'endDate': self.end,
-                   }
-        headers = {'User-Agent':
-                   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
-                   + 'AppleWebKit/537.36 (KHTML, like Gecko) '
-                   + 'Chrome/91.0.4472.77 Safari/537.36',
-                   }
 
-        time = datetime.now().strftime('%H:%M:%S')
+        self.time = datetime.now().strftime('%H:%M:%S')
+        self.resp = requests.get(self.url,
+                            params=self.payload, headers=self.headers)
+        results = self.resp.json()
+        self.available = [result for result in results
+                          if result.get('availability') != 'none']
 
-        resp = requests.get(self.url, params=payload, headers=headers)
+    @staticmethod
+    def check_response(resp):
+        code = resp.status_code == 200
+        text = resp.text != '[{}]'
+        return code & text
 
-        if resp.status_code != 200:
+    def validate(self):
+        if not self.check_response(self.resp):
             self.logger.exception('Error retrieving calendar')
             sys.exit(1)
-
-        results = resp.json()
-
-        available = [result for result in results
-                     if result.get('availability') != 'none']
-
-        self.time = time
-        self.available = available
 
     def notify(self, stdout=False, telegram=False):
         ''' Send reservation availability status to specified target'''
@@ -113,11 +115,11 @@ def get_logger():
     logger.setLevel(logging.DEBUG)
 
     # Console handler
-    console_format_string = \
-        '%(asctime)s:%(levelname)s:%(name)s:%(lineno)d:%(message)s'
+    console_format= logging.Formatter(
+        '%(asctime)s:%(levelname)s:%(name)s:%(lineno)d:%(message)s')
     console_handler = logging.StreamHandler(sys.stderr)
     console_handler.setLevel(logging.ERROR)
-    console_handler.setFormatter(console_format_string)
+    console_handler.setFormatter(console_format)
 
     # Add handler(s) to logger
     logger.addHandler(console_handler)
@@ -134,6 +136,7 @@ def parse_arguments(args):
     )
     parser.add_argument(
         '-s', '--start', dest='start', required=False,
+        default=date.today().strftime('%Y-%m-%d'),
         help='Starting date for reservation query as yyyy-mm-dd ' \
             + '(default: today)')
     parser.add_argument(
@@ -153,6 +156,7 @@ def main():
     calendar = DisneylandReservationChecker(logger, args.start, args.end)
     while True:
         calendar.refresh()
+        calendar.validate()
         calendar.notify(stdout=True)
         sleep(30)
 
