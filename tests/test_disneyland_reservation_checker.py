@@ -5,46 +5,6 @@
 import unittest
 import disneyland_reservation_checker as drc
 from datetime import date
-import requests
-
-
-class TestCli(unittest.TestCase):
-    ''' Test CLI wrapper'''
-
-    def test_start_default(self):
-        ''' Test cli wrapper default value of start option is set to today as yyyy-mm-ddd
-            when no arguements are passed to applicaiton
-        '''
-
-        parser = drc.parse_arguments([])
-        value = parser.start
-        expected_value = date.today().strftime('%Y-%m-%d')
-
-        message = f'Expected default value:{expected_value} '\
-            + f'does not equal actual default value:{parser.start}'
-        self.assertEqual(expected_value, value, message)
-
-    def test_start(self):
-        ''' Test cli wrapper start argument passes correctly'''
-
-        parser = drc.parse_arguments(['-s', '2021-12-12'])
-        value = parser.start
-        expected_value = '2021-12-12'
-
-        message = f'Expected value:{expected_value} '\
-            + f'does not equal actual value:{value}'
-        self.assertEqual(expected_value, value, message)
-
-    def test_end(self):
-        ''' Test cli wrapper end argument passes correctly'''
-
-        parser = drc.parse_arguments(['-e', '2021-12-12'])
-        value = parser.end
-        expected_value = '2021-12-12'
-
-        message = f'Expected value:{expected_value} '\
-            + f'does not equal actual value:{value}'
-        self.assertEqual(expected_value, value, message)
 
 
 class TestInitOptions(unittest.TestCase):
@@ -82,6 +42,7 @@ class TestInitOptions(unittest.TestCase):
         message = f'Expected value:{expected_value} '\
             + f'does not equal actual value:{value}'
         self.assertEqual(expected_value, value, message)
+
 
 class TestResponse(unittest.TestCase):
     ''' Test API response'''
