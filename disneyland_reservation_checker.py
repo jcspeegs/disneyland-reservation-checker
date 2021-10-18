@@ -1,6 +1,11 @@
+import logging
 import sys
 import requests
 from datetime import datetime, date
+from exceptions import (
+    StatusCodeError,
+    EmptyResponseError,
+)
 
 
 class DisneylandReservationChecker():
@@ -14,8 +19,7 @@ class DisneylandReservationChecker():
                + 'AppleWebKit/537.36 (KHTML, like Gecko) '
                + 'Chrome/91.0.4472.77 Safari/537.36', }
 
-    def __init__(self, logger=None, start: str = None, end: str = None):
-        self.logger = logger
+    def __init__(self, start: str = None, end: str = None):
         self.start = start
         self.end = end
         self.available = None
@@ -23,6 +27,9 @@ class DisneylandReservationChecker():
         self.payload = {'segment': 'ticket',
                         'startDate': self.start,
                         'endDate': self.end, }
+        self.logger = logging.getLogger(__name__)
+        self.logger.info(f'{type(self).__name__} initialized'
+                         f'\nstart:\t{self.start}\nend:\t{self.end}')
 
     @property
     def start(self):
@@ -62,12 +69,6 @@ class DisneylandReservationChecker():
 
         return f'{message}\n{"~"*width}'
 
-    @staticmethod
-    def check_response(resp):
-        code = resp.status_code == 200
-        text = resp.text != '[{}]'
-        return code & text
-
     def refresh(self):
         ''' Check the calendar'''
 
@@ -79,6 +80,7 @@ class DisneylandReservationChecker():
                           if result.get('availability') != 'none']
 
     def validate(self):
-        if not self.check_response(self.resp):
-            self.logger.exception('Error retrieving calendar')
-            sys.exit(1)
+        if self.resp.status_code != 200:
+            raise StatusCodeError(resp.status_code)
+        elif self.resp.text == '[{}]':
+            raise EmptyResponseError()

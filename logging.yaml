@@ -1,0 +1,17 @@
+version: 1
+disable_existing_loggers: True
+
+formatters:
+  console_format:
+    format: '%(asctime)s:%(levelname)s:%(name)s:%(lineno)d:%(message)s'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: WARNING
+    formatter: console_format
+    stream: ext://sys.stderr
+
+root:
+  level: INFO
+  handlers: [console, ]
