@@ -12,7 +12,7 @@ class DisneylandReservationChecker():
     ''' Check reservation availability at Disneyland and California Adventure
     '''
 
-    URL = 'https://disneyland.disney.go.com/availability-calendar/api/calendar'
+    BASEURL = 'https://disneyland.disney.go.com/availability-calendar/api/calendar'
 
     HEADERS = {'User-Agent':
                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
@@ -28,8 +28,9 @@ class DisneylandReservationChecker():
                         'startDate': self.start,
                         'endDate': self.end, }
         self.logger = logging.getLogger(__name__)
-        self.logger.info(f'{type(self).__name__} initialized'
-                         f'\nstart:\t{self.start}\nend:\t{self.end}')
+        self.logger.info(f'{type(self).__name__} initialized')
+        self.logger.info(f'start:{self.start}')
+        self.logger.info(f'end:{self.end}')
 
     @property
     def start(self):
@@ -58,8 +59,11 @@ class DisneylandReservationChecker():
 
         message = [f'{self.time}', ]
         if self.available:
+            park_format = {'DLR_CA': 'CA Adv', 'DLR_DP': 'DisneyLand'}
             for day in self.available:
                 park = ' and '.join(day['parks'])
+                for key, val in park_format.items():
+                    park = park.replace(key, val)
                 message += [f'{day["date"]} is available for: {park}', ]
         else:
             message += ['No availability :(', ]
@@ -73,12 +77,14 @@ class DisneylandReservationChecker():
         ''' Check the calendar'''
 
         self.time = datetime.now().strftime('%H:%M:%S')
-        self.logger.debug(f'URL:{self.URL}')
+        self.logger.debug(f'BASEURL:{self.BASEURL}')
         self.logger.debug(f'payload:{self.payload}')
         self.logger.debug(f'HEADERS:{self.HEADERS}')
-        self.resp = requests.get(self.URL, params=self.payload,
+        self.resp = requests.get(self.BASEURL, params=self.payload,
                                  headers=self.HEADERS)
+        self.logger.debug(f'query:{self.resp.url}')
         results = self.resp.json()
+        self.logger.debug(f'json:{results}')
         self.available = [result for result in results
                           if result.get('availability') != 'none']
 
