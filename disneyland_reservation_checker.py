@@ -39,9 +39,11 @@ class DisneylandReservationChecker():
     @start.setter
     def start(self, start):
         if start:
-            self._start = start
+            start_date = self.cleanse_date_arg(start)
         else:
-            self._start = date.today().strftime('%Y-%m-%d')
+            start_date = date.today()
+
+        self._start = start_date.strftime('%Y-%m-%d')
 
     @property
     def end(self):
@@ -50,7 +52,8 @@ class DisneylandReservationChecker():
     @end.setter
     def end(self, end):
         if end:
-            self._end = end
+            end_date = self.cleanse_date_arg(end)
+            self._end = end_date.strftime('%Y-%m-%d')
         else:
             self._end = self.start
 
@@ -73,6 +76,20 @@ class DisneylandReservationChecker():
 
         return f'{message}\n{"~"*width}'
 
+    @staticmethod
+    def cleanse_date_arg(date: str) -> date:
+        ''' Cleanse a date string and return a date'''
+
+        try:
+            date = datetime.strptime(date, '%Y-%m-%d')
+        except ValueError as DateFormatError:
+            try:
+                date = datetime.strptime(date, '%y-%m-%d')
+            except ValueError:
+                raise DateFormatError
+
+        return date
+
     def refresh(self):
         ''' Check the calendar'''
 
@@ -84,6 +101,7 @@ class DisneylandReservationChecker():
                                  headers=self.HEADERS)
         self.logger.debug(f'query:{self.resp.url}')
         results = self.resp.json()
+        self.logger.debug(f'status_code:{self.resp.status_code}')
         self.logger.debug(f'json:{results}')
         self.available = [result for result in results
                           if result.get('availability') != 'none']
