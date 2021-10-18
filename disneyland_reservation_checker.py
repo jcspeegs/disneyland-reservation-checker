@@ -73,8 +73,11 @@ class DisneylandReservationChecker():
         ''' Check the calendar'''
 
         self.time = datetime.now().strftime('%H:%M:%S')
-        self.resp = requests.get(self.URL,
-                                 params=self.payload, headers=self.HEADERS)
+        self.logger.debug(f'URL:{self.URL}')
+        self.logger.debug(f'payload:{self.payload}')
+        self.logger.debug(f'HEADERS:{self.HEADERS}')
+        self.resp = requests.get(self.URL, params=self.payload,
+                                 headers=self.HEADERS)
         results = self.resp.json()
         self.available = [result for result in results
                           if result.get('availability') != 'none']
