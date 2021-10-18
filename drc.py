@@ -3,10 +3,11 @@
 ''' CLI implementation of DisneylandReservationChecker class'''
 
 import argparse
+import yaml
+import logging.config
 import sys
 from time import sleep
 from datetime import date
-import util
 import disneyland_reservation_checker as drc
 
 
@@ -29,12 +30,15 @@ def parse_arguments(args):
     parser.add_argument(
         '-q', '--quiet', dest='stdout', required=False, default=True,
         action='store_const', const=False,
-        help='Send output to stdout (default: True)'
+        help='Surpress output from being sent to stdout (default: False)'
     )
     parser.add_argument(
         '--tg', '--telegram', dest='telegram', required=False, default=False,
         action='store_const', const=True,
         help='Send output to telegram (default: False)'
+    )
+    parser.add_argument('-v', action='store_true', dest='verbose',
+                        help='Print verbose output'
     )
 
     return parser.parse_args(args)
@@ -59,10 +63,19 @@ def main():
     ''' Check reservation availability at Disneyland and California Adventure
     '''
 
-    logger = util.get_logger()
+    # Parse arguments
     args = parse_arguments(sys.argv[1:])
 
-    calendar = drc.DisneylandReservationChecker(logger, args.start, args.end)
+    # Configure logging
+    log_conf = 'logging.yaml'
+    with open(log_conf) as f:
+        config = yaml.safe_load(f)
+
+    if args.verbose:
+        config['handlers']['console']['level'] = 'INFO'
+    logging.config.dictConfig(config)
+
+    calendar = drc.DisneylandReservationChecker(args.start, args.end)
     while True:
         calendar.refresh()
         calendar.validate()
