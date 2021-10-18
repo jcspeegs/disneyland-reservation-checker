@@ -3,7 +3,6 @@
 ''' Telegram bot wrapper for Disneyland Reservation Checker
 '''
 
-import logging
 import disneyland_reservation_checker as drc
 import util
 import config
@@ -21,23 +20,29 @@ def print_help(update: Update, context: CallbackContext) -> None:
     text = 'Disneyland Reservation Checker'
     url = 'https://github.com/jcspeegs/disneyland-reservation-checker'
     message = f'Hi {name.mention_markdown_v2()}, I am the ' \
-              f'{text}'\
-              f'\n``` /check <yyyy-mm-dd>```\nchecks reservations at ' \
+              f'[{text}]({url})'\
+              f'\n``` /check1 <yyyy-mm-dd>```\nchecks reservations at ' \
               f'Disneyland or California Adventure\.' \
               f'\n``` /help```\nprints this help message\.'
-    update.message.reply_markdown_v2(message, disable_web_page_preview=False)
+    update.message.reply_markdown_v2(message, disable_web_page_preview=True)
 
 
-def check(update: Update, context: CallbackContext) -> None:
+def check1(update: Update, context: CallbackContext) -> None:
     ''' Check given date for reservation availability'''
 
-    logger = util.get_logger()
-    check_date = ' '.join(context.args)
-    calendar = drc.DisneylandReservationChecker(logger, check_date)
+    check_date = context.args[0]
+    calendar = drc.DisneylandReservationChecker(check_date)
     calendar.refresh()
     calendar.validate()
     message = str(calendar)
     update.message.reply_text(message)
+
+def keep_checking(update: Update,
+                  context: CallbackContext) -> None:
+    ''' Check for reservations every 30 seconds'''
+
+    context.job_queue.run_repeating(check, interval=30,
+                                    context=context)
 
 
 def main():
@@ -55,7 +60,9 @@ def main():
 
     dispatcher.add_handler(CommandHandler('start', print_help))
     dispatcher.add_handler(CommandHandler('help', print_help))
-    dispatcher.add_handler(CommandHandler('check', check))
+    dispatcher.add_handler(CommandHandler('check1', check1))
+    dispatcher.add_handler(CommandHandler('check',
+                                          keep_checking))
 
     updater.start_polling()
     updater.idle()
