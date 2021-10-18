@@ -3,9 +3,10 @@
 ''' Telegram bot wrapper for Disneyland Reservation Checker
 '''
 
+import yaml
+import logging.config
+import bot_config
 import disneyland_reservation_checker as drc
-import util
-import config
 from telegram import Update
 from telegram.ext import (
     Updater,
@@ -49,10 +50,14 @@ def main():
     ''' Run the bot'''
 
     # Configure logging
-    logger = util.get_logger()
+    log_conf = 'logging.yaml'
+    with open(log_conf) as f:
+        config = yaml.safe_load(f)
+
+    logging.config.dictConfig(config)
 
     # Create the updater and pass it bot token
-    TOKEN = config.TOKEN
+    TOKEN = bot_config.TOKEN
     updater = Updater(TOKEN)
 
     # Get the dispatcher to register handlers
