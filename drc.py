@@ -19,6 +19,10 @@ def parse_arguments(args):
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
+        '-r', '--refresh-rate', dest='refresh_rate', default=30, type=int,
+        help='Reservation status refresh rate in seconds'
+    )
+    parser.add_argument(
         '-s', '--start', dest='start', required=False,
         default=date.today().strftime('%Y-%m-%d'),
         help='Start date for reservation query as yyyy-mm-dd (default: today)'
@@ -82,7 +86,7 @@ def main():
         calendar.refresh()
         calendar.validate()
         notify(calendar, stdout=args.stdout, telegram=args.telegram)
-        sleep(30)
+        sleep(args.refresh_rate)
 
 
 if __name__ == '__main__':
