@@ -37,7 +37,7 @@ def parse_arguments(args):
         action='store_const', const=True,
         help='Send output to telegram (default: False)'
     )
-    parser.add_argument('-v', action='store_true', dest='verbose',
+    parser.add_argument('-v', '--verbose', action='count', default=0,
                         help='Print verbose output'
     )
 
@@ -71,8 +71,10 @@ def main():
     with open(log_conf) as f:
         config = yaml.safe_load(f)
 
-    if args.verbose:
+    if args.verbose == 1:
         config['handlers']['console']['level'] = 'INFO'
+    elif args.verbose == 2:
+        config['handlers']['console']['level'] = 'DEBUG'
     logging.config.dictConfig(config)
 
     calendar = drc.DisneylandReservationChecker(args.start, args.end)
