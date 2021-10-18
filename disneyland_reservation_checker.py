@@ -20,6 +20,7 @@ class DisneylandReservationChecker():
                + 'Chrome/91.0.4472.77 Safari/537.36', }
 
     def __init__(self, start: str = None, end: str = None):
+        self.logger = logging.getLogger(__name__)
         self.start = start
         self.end = end
         self.available = None
@@ -27,7 +28,6 @@ class DisneylandReservationChecker():
         self.payload = {'segment': 'ticket',
                         'startDate': self.start,
                         'endDate': self.end, }
-        self.logger = logging.getLogger(__name__)
         self.logger.info(f'{type(self).__name__} initialized')
         self.logger.info(f'start:{self.start}')
         self.logger.info(f'end:{self.end}')
@@ -38,6 +38,7 @@ class DisneylandReservationChecker():
 
     @start.setter
     def start(self, start):
+        self.logger.debug(f'raw start:{start}')
         if start:
             start_date = self.cleanse_date_arg(start)
         else:
@@ -51,6 +52,7 @@ class DisneylandReservationChecker():
 
     @end.setter
     def end(self, end):
+        self.logger.debug(f'raw end:{end}')
         if end:
             end_date = self.cleanse_date_arg(end)
             self._end = end_date.strftime('%Y-%m-%d')
