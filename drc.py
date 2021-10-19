@@ -12,12 +12,9 @@ import disneyland_reservation_checker as drc
 
 
 def parse_arguments(args):
-    ''' Parse command line arguements'''
+    ''' Parse command line arguments'''
 
-    parser = argparse.ArgumentParser(
-        description=main.__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter
-    )
+    parser = argparse.ArgumentParser(description=main.__doc__)
     parser.add_argument(
         '-r', '--refresh-rate', dest='refresh_rate', default=30, type=int,
         help='Reservation status refresh rate in seconds'
