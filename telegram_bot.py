@@ -145,13 +145,14 @@ def list_jobs(update: Update, context: CallbackContext) -> None:
             desc = f'{i}) Checking {j.context["check_date"]}'
             message.append(desc)
         message = '\n'.join(message)
-        logger.debug(f'message:{message}')
-        update.message.reply_text(message)
+        parse_mode = None
 
     elif job_count == 0:
         syntax = DOC['CHECK']['SYNTAX']
         message = f'No dates to check\.\nAdd one with: {syntax}'
-        context.bot.send_message(name, message, parse_mode='MarkdownV2')
+        parse_mode = 'MarkdownV2'
+
+    context.bot.send_message(name, message, parse_mode=parse_mode)
 
 
 def define_keyboard(jobs: tuple, columns: int) -> list:
